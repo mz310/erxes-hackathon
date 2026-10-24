@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Edu Tech Brave
 
 Edu Tech Brave plugin for erxes
@@ -72,3 +73,6 @@ a private gateway-only network and strip user/tenant headers at public ingress.
 
 See [docs/erxes-integration.md](docs/erxes-integration.md) for how the plugin
 plugs into erxes and [AGENTS.md](AGENTS.md) for the rules to keep it working.
+=======
+### Erxes academy, Tee ducks
+>>>>>>> 078aacae6fa3df2e5ac5782a61e55a141001a757
