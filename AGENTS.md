@@ -12,9 +12,40 @@ is the single source of the plugin's identity and ports.
 - `pnpm run dev:api` / `pnpm run dev:ui`
 - `pnpm run codegen`
 - `pnpm run check`, `pnpm run lint`, `pnpm run build`, `pnpm run fmt`
+- `pnpm test` (API unit tests: `node --test`, native type stripping)
 - `docker build --build-arg UI_ENTRY_URL=<remoteEntry.js URL> -t <image> .`
 
-Run `check`, `lint` and `build` before calling a change done.
+Run `check`, `lint`, `test` and `build` before calling a change done.
+
+## Domain
+
+«Эрх хамгаалал» is case management for rights violations in schools.
+The spec is `docs/superpowers/specs/2026-10-24-rights-case-management-design.md`.
+
+- `api/src/modules/cases/domain.ts` holds the pure rules: the status
+  machine, SLA, escalation, the protocol, PIN hashing, validation and the
+  conflict gate. It is tested with `node --test`. Keep it framework-free
+  and erasable TypeScript, with no `enum`.
+- Events (`CaseEvents`) and evidence (`Evidence`) are append-only. Never
+  add update or delete statics or mutations for them.
+- Public resolvers live in `api/src/modules/cases/graphql/publicResolvers.ts`
+  and, for the AI anonymity check, `api/src/modules/ai/graphql/publicResolvers.ts`.
+  They must never return staff ids, reporter contact or non-public events.
+  `serialize.test.ts` pins this.
+- The intake page is `api/src/modules/intake/page.ts` and runs under a
+  nonce CSP. Do not add inline `style="…"` attributes or external assets.
+- Reclassification (`planReclassify` in `domain.ts`) only tightens a case. It
+  may add protocol steps but never removes them. It may move `dueAt` earlier
+  but never later.
+- The AI assistant (`api/src/modules/ai/`, spec
+  `docs/superpowers/specs/2026-10-24-ai-assistant-design.md`) only suggests:
+  - Never write model output into a case field.
+  - `ai_assist` events are always `isPublic: false`, and they store neither
+    the prompt nor model prose.
+  - Prompts never include reporter contact, tracking codes or user ids.
+  - Provider failures must fail closed and must never read as "low risk".
+  - `client.ts` and `tasks.ts` are test-imported, so keep them free of
+    `config.ts`.
 
 ## Naming invariants
 

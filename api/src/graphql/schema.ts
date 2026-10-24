@@ -1,8 +1,13 @@
 import { gql } from "graphql-tag";
-import { GraphQLError } from "graphql";
 import { manifest } from "../config.ts";
 import type { Context } from "../connectionResolvers.ts";
-import { SAMPLE_READ } from "../permissions.ts";
+import { aiPublicMutations } from "../modules/ai/graphql/publicResolvers.ts";
+import { aiMutations, aiQueries } from "../modules/ai/graphql/resolvers.ts";
+import { aiMutations as aiMutationDefs, aiQueries as aiQueryDefs, aiTypes } from "../modules/ai/graphql/typeDefs.ts";
+import { caseMutations } from "../modules/cases/graphql/mutations.ts";
+import { publicMutations, publicQueries } from "../modules/cases/graphql/publicResolvers.ts";
+import { caseQueries } from "../modules/cases/graphql/queries.ts";
+import { caseMutations as caseMutationDefs, caseQueries as caseQueryDefs, caseTypes } from "../modules/cases/graphql/typeDefs.ts";
 
 // Every type and operation is prefixed with the plugin name: the gateway
 // composes all plugins into one supergraph, so names must be unique across it.
@@ -17,15 +22,18 @@ export const typeDefs = gql`
     userEmail: String
   }
 
-  type EduTechBraveSample {
-    _id: String!
-    label: String!
-    createdAt: String
-  }
+  ${caseTypes}
+  ${aiTypes}
 
   type Query {
     eduTechBraveStatus: EduTechBraveStatus!
-    eduTechBraveSamples(limit: Int = 20, offset: Int = 0): [EduTechBraveSample!]!
+    ${caseQueryDefs}
+    ${aiQueryDefs}
+  }
+
+  type Mutation {
+    ${caseMutationDefs}
+    ${aiMutationDefs}
   }
 `;
 
@@ -38,28 +46,14 @@ export const resolvers = {
       userId: user?._id ?? null,
       userEmail: user?.email ?? null,
     }),
-    eduTechBraveSamples: async (
-      _parent: unknown,
-      { limit = 20, offset = 0 }: { limit?: number; offset?: number },
-      { models, user, subdomain, checkPermission }: Context,
-    ) => {
-      if (!user?._id) {
-        throw new GraphQLError("Login required", { extensions: { code: "UNAUTHENTICATED" } });
-      }
-      if (!subdomain) {
-        throw new GraphQLError("Tenant required", { extensions: { code: "FORBIDDEN" } });
-      }
-      await checkPermission(SAMPLE_READ);
-      if (!Number.isInteger(limit) || limit < 1 || limit > 100 ||
-          !Number.isInteger(offset) || offset < 0 || offset > 10_000) {
-        throw new GraphQLError("Use limit 1–100 and offset 0–10000", {
-          extensions: { code: "BAD_USER_INPUT" },
-        });
-      }
-      return (await models.Samples.list({ limit, offset })).map((sample) => ({
-        ...sample,
-        createdAt: sample.createdAt?.toISOString?.() ?? null,
-      }));
-    },
+    ...caseQueries,
+    ...publicQueries,
+    ...aiQueries,
+  },
+  Mutation: {
+    ...caseMutations,
+    ...publicMutations,
+    ...aiMutations,
+    ...aiPublicMutations,
   },
 };

@@ -10,21 +10,12 @@
     "build": "pnpm run codegen && pnpm --filter edu-tech-brave_api build && pnpm --filter edu-tech-brave_ui build",
     "check": "pnpm run codegen && pnpm --filter edu-tech-brave_api check && pnpm --filter edu-tech-brave_ui check",
     "lint": "oxlint",
-    "fmt": "oxfmt"
+    "fmt": "oxfmt",
+    "test": "pnpm --filter edu-tech-brave_api test"
   },
   "devDependencies": {
     "oxfmt": "^0.71.0",
     "oxlint": "^1.86.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "react": "18.3.1",
-      "react-dom": "18.3.1",
-      "@sentry/node": "10.76.2",
-      "@opentelemetry/api": "1.9.1",
-      "@opentelemetry/instrumentation": "0.220.0",
-      "@opentelemetry/sdk-trace-base": "2.12.0"
-    }
   },
   "packageManager": "pnpm@12.15.0"
 }
