@@ -7,7 +7,8 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node --env-file-if-exists=../.env dist/main.js",
     "check": "tsc --noEmit",
-    "schema:print": "tsx src/print-schema.ts"
+    "schema:print": "tsx src/print-schema.ts",
+    "test": "node --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "erxes-api-shared": "npm:@erxes/api-shared@3.3.4",

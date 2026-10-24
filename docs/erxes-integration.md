@@ -161,21 +161,35 @@ including dashes. The normalized container `edu_tech_brave_ui` is only a loading
 it must never replace that public permission identity.
 Enforce access in the API resolvers, never only in the UI.
 
-On the platform stack, `api/src/permissions.ts` declares
-`eduTechBraveSamplesRead` and `main.ts` registers it as `meta.permissions`.
-The sample list requires a user, a tenant and `await checkPermission(action)`
-before reading `context.models.Samples`. An administrator must grant the
-sample module's read action with `all` scope (or use an owner account). There
-are no automatic default grants. `all` means this tenant only: the model
-factory selects the tenant's database. The example deliberately does not
-advertise own/group scopes without implementing corresponding row filters.
+`api/src/permissions.ts` declares two modules, and `main.ts` registers them
+as `meta.permissions`:
 
-The sample query accepts `limit` (default 20, range 1–100) and `offset`
-(default 0, range 0–10000), applies both in Mongo and sorts by `createdAt` and
-`_id`. The platform UI shows loading, denied/error, empty and paginated states.
-The status query is a diagnostic and does not read sample data. Standalone
-frameworks provide only the diagnostic query; add real authorization before
-adding application data.
+- `eduTechBraveCases` has the actions `eduTechBraveCasesRead`,
+  `eduTechBraveCasesCreate`, `eduTechBraveCasesManage` and
+  `eduTechBraveEvidenceAdd`.
+- `eduTechBraveSettings` has the action `eduTechBraveSettingsManage`.
+
+Every staff resolver requires a user and `await checkPermission(action)`
+before it touches `context.models`. An administrator must grant the actions
+with `all` scope, or the user must be an owner. There are no automatic
+default grants. `all` means this tenant only, because the model factory
+selects the tenant's database. Own and group scopes are not advertised,
+because the queries do not filter rows by owner. No action removes data:
+cases, timeline events and evidence are append-only.
+
+The case list uses cursor pagination (`limit` 1–100, default 30) through
+`cursorPaginate`. It sorts by `createdAt` and runs lazy escalation of
+overdue cases first.
+
+Two resolvers are public and carry `wrapperConfig.skipPermission`:
+`eduTechBraveSubmitReport` and `eduTechBraveTrackReport`. They serve the
+anonymous intake page (`GET /intake`, through the gateway at
+`/pl:edu-tech-brave/intake`). They are rate-limited per client IP and never
+return staff identities, contact data or internal notes.
+
+The gateway's user middleware deletes any client-supplied `user` header
+before it sets the authenticated one. A `/pl:` request therefore cannot
+forge staff identity, provided the API port itself stays private.
 
 ## Trusted gateway boundary
 
