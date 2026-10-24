@@ -1,0 +1,20 @@
+{
+  "name": "edu-tech-brave",
+  "title": "Edu Tech Brave",
+  "description": "Edu Tech Brave plugin for erxes",
+  "version": "0.1.0",
+  "api": {
+    "framework": "platform",
+    "runtime": "node",
+    "port": 3399,
+    "graphql": "/graphql",
+    "health": "/health"
+  },
+  "ui": {
+    "framework": "react",
+    "port": 3099,
+    "name": "edu-tech-brave",
+    "remote": "edu_tech_brave_ui",
+    "path": "edu-tech-brave"
+  }
+}
